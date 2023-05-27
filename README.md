@@ -1,12 +1,13 @@
-# 使用PyTorch实现图像分类
+# Implement image classification using PyTorch
 ---
-## 🥇定义模型：
+## 🥇Define the model:
   
-### 🥈创建ResNet文件，建立一个小的神经网络
+### 🥈Create a *ResNet* file and build a small neural network
   
-以下为一个基于ResNet34模型的变种，其中定义了一个ResNet32类，  
-它包含了一个卷积层，四个残差层，一个平均池化层和一个全连接层，  
-每个残差层又包含了多个残差模块，每个残差模块由两个卷积层和一个快捷连接组成。  
+The following is a variant based on the ResNet34 model, where a ResNet32 class is defined,  
+which contains a convolutional layer, four residual layers, an average pooling layer and a fully connected layer,  
+each residual layer contains multiple residual modules, each residual module consists of two convolutional layers and a shortcut connection.  
+  
   
     import torch
     import torch.nn as nn
@@ -67,12 +68,12 @@
             x = self.layer2(x)
             x = self.layer3(x)
             x = self.layer4(x)
-            x = self.avgpooling(x)
-            x = x.view(x.shape[0], -1)
-            x = self.classifier(x)
-            output = F.softmax(x,dim=1) # 设置dim = 1，对图像沿着某维度进行归一化，得到每张图片的概率分布或预测类别
+            x = self.avgpooling(x)  
+            x = x.view(x.shape[0], -1)  
+            x = self.classifier(x)  
+            output = F.softmax(x,dim=1) # 设置 dim = 1，沿某个维度对图像进行归一化，得到每个图像的概率分布或预测类别
 
-            return output
+            return output  
 
 
     if __name__=='__main__':
@@ -82,52 +83,72 @@
         print(out.shape)
         
         
-在命令行调用该模型，显示结果为：
+Call the model from the command line and display the results as:
   
 ![ResNet结果](https://github.com/2062935430/ResNet34-Test/assets/128795948/bc8ac95a-58e7-40b8-a1d7-0bed798da981)  
   
-由此可以看出该模型的输入张量是一个8x3x224x224的张量，  
-表示有8个样本，每个样本有3个通道，每个通道有224x224个像素。  
-
-该模型的输出张量是一个8x2的张量，  
-表示有8个样本，每个样本有2个类别的概率，  
-这是一个用于图像二分类任务的神经网络模型  
+It can be seen that the input tensor of the model is an 8x3x224x224 tensor,  
+which means there are 8 samples, each sample has 3 channels, each channel has 224x224 pixels.  
   
-## 🥇图像分类模型的训练和测试
+The output tensor of the model is an 8x2 tensor,   
+which means there are 8 samples, each sample has 2 categories of probabilities,  
+this is a neural network model for image binary classification task  
   
-### 🥈训练过程(train)：
+## 🥇Training and testing of image classification model
   
->🥉**验证集val与测试集test**  
+### 🥈Training：
+  
+>🥉**Validation set and test set**  
 >  
->相同点:  
->它们都不参与模型的训练过程，只用于评估模型的性能。  
->它们都需要和训练集有近似的数据分布，以保证模型的泛化能力。  
+>✒Similarities:  
+>They both do not participate in the model training process,   
+>and are only used to evaluate the model performance.  
+>They both need to have a similar data distribution as the training set,  
+>to ensure the model’s generalization ability.  
 >  
->不同点:   
->验证集用于进一步确定模型中的超参数（例如正则项系数、ANN中隐含层的节点个数等），主要目的是为了挑选在验证集上表现最好的模型。  
->测试集只是用于评估模型的精确度（即泛化能力），主要目的是为了看看模型在实际生活中如何处理。  
->验证集是用来在训练过程中不断优化模型的，而测试集是用来在训练结束后最终评价模型的。  
+>✒Differences:   
+>The validation set is used to further determine the hyperparameters in the model，  
+>(such as regularization coefficient, number of nodes in the hidden layer of ANN, etc.)  
+>and the main purpose is to select the model that performs best on the validation set.  
 >  
->目的：  
->验证集是用来在训练过程中评估模型的效果和调整模型的超参数的数据样本。  
->例如，可以使用验证集来选择最优的学习率、迭代次数、层数等。   
+>The test set is only used to evaluate the accuracy (i.e., generalization ability) of the model,  
+>and the main purpose is to see how the model handles real-life situations.  
+>The validation set is used to optimize the model during the training process,  
+>while the test set is used to evaluate the model after the training is finished.    
+>  
+>✒Purpose：  
+>The validation set is a data sample used to evaluate the model effect,  
+>and adjust the model hyperparameters during the training process.  
+>  
+>For example, you can use the validation set to select the optimal learning rate,  
+>number of iterations, number of layers, etc.  
+>  
+>The test set is a data sample used to evaluate the model performance and classification ability after the training is finished.  
+> For example, you can use the test set to estimate the model’s generalization error in real scenarios.  
+>  
+>***The validation set and test set do not participate in the model fitting,***  
+>***but the validation set will affect the model selection, while the test set will not.***  
+  
+>🥉**Hyperparameters**  
+>  
+>Hyperparameter optimization is an important step in machine learning,  
+>which requires different strategies to search for the best configuration,  
+>such as grid search, random search, Bayesian optimization, etc.  
 >   
->测试集是用来在训练结束后评估模型的性能和分类能力的数据样本。  
->例如，可以使用测试集来估计模型在真实场景中的泛化误差。  
+>Generally speaking,  
+>if we compare the training process to making a cake,  
+>we will need some ingredients, such as flour, eggs, milk, sugar, etc.  
 >  
->验证集和测试集都不参与模型的拟合，但验证集会影响模型的选择，而测试集不会  
-  
->🥉**超参数**  
+>These ingredients are equivalent to model parameters,  
+>which need to be estimated with data,  
+>that is, they need to be determined according to different cake recipes.  
 >  
->超参数的优化是机器学习中一个重要的步骤，需要通过不同的策略来搜索最佳的配置，例如网格搜索、随机搜索、贝叶斯优化等。   
->   
->笼统而言，如果把训练过程比喻为做蛋糕，那我们会需要用到一些材料，比如面粉、鸡蛋、牛奶、糖等。  
->这些材料就相当于模型参数，它们是需要用数据来估计的，也就是需要根据不同的蛋糕食谱来确定其比例和数量。  
->    
->但我们还需要一些其他的东西，  
->比如烤箱的温度、烘焙的时间、蛋糕的大小和形状等等。 
->这些东西就相当于超参数，它们是你需要人为设定的，也就是需要根据自身经验与尝试来选择合适的值。  
->超参数的优化就是为了找到最适合做蛋糕的温度、时间、大小和形状等等。  
+>But we also need some other things,  
+>such as the oven temperature, baking time, cake size and shape, etc.  
+>These things are equivalent to hyperparameters, which you need to set manually,  
+>that is, you need to choose appropriate values based on your own experience and trial and error.  
+>  
+>Hyperparameter optimization is to find the most suitable temperature, time, size and shape for making a cake.
   
     import argparse
     import time
@@ -344,23 +365,24 @@
                            % (args.model, epoch, val_acc, val_loss)
                 torch.save(worker.model, save_dir)
                 
-在以上代码import了一个和train.py存放同一目录下的ResBet34模块，  
-所以直接进入命令行程序调用train.py文件进行模型训练时，  
-该训练会默认使用同一目录下的该模型展开图像分类的训练，  
-训练过程输出如下：  
+In the above code, a ResBet34 module that is stored in the same directory as train.py is imported,  
+so when you directly enter the command line program to call the train.py file to train the model,  
+the training will use the same directory of the model to carry out image classification training by default,   
+the output of the training process is as follows:  
   
 ![使用ResNet34模型完成train](https://github.com/2062935430/ResNet34-Test/assets/128795948/77384b99-e2a6-45fa-8cf4-4f88cdb99a13)
   
 ---
-### 🥈测试过程（test）： 
+### 🥈Testing： 
   
-在训练过程中我们完成了对模型的训练，  
-并将train脚本的save-station赋值为1，  
-那么我们的模型将从第一轮开始保存，然后将5轮模型训练参数保存在默认的path下，  
-在该代码中则会在本目录下建立dictionary文件夹用于ResNet模型的保存工作。  
+During the training process, we completed the training of the model,  
+and assigned the save-station of the train script to 1,  
+then our model will start saving from the first round, and then save the model training parameters of 5 rounds in the default path,  
+in this code, a dictionary folder will be created in the current directory for the ResNet model saving work.  
   
-在测试过程我们则需要对这些保存的模型进行测试，  
-参考train.py的val函数设计test脚本，评估模型在验证集上的性能，包括准确率、损失等指标。  
+In the testing process, we need to test these saved models,  
+refer to the val function of train.py to design the test script,  
+evaluate the model performance on the validation set, including accuracy, loss and other indicators.  
   
     import torch
     import ResNet34
@@ -428,17 +450,19 @@
         val()
   
   
-这个test代码块加载了训练后的ResNet34模型，  
-并将其放到指定的设备上，设置为评估模式，不进行梯度更新。  
+This test code block loads the trained ResNet34 model,  
+and puts it on the specified device,  
+sets it to evaluation mode, and does not update the gradients.  
   
-指定测试数据集的路径为"data/test"，并使用ImageFolder类加载图片数据，  
-同时使用RandomResizedCrop和ToTensor这两个变换对图片进行裁剪和转换为张量。  
-指定数据集加载器为test_loader，设置批次大小为4，不打乱数据顺序，使用4个线程加载数据。  
+The path of the test dataset is specified as “data/test”,  
+and the ImageFolder class is used to load the image data, at the same time,  
+using RandomResizedCrop and ToTensor these two transformations to crop and convert the images to tensors.  
+The dataset loader is specified as test_loader, setting the batch size to 4, not shuffling the data order, using 4 threads to load the data.
   
-他定义了一个val函数，用于在测试数据集上评估模型的性能，计算平均损失和准确率，并打印结果，  
-最后在主函数中调用val函数进行测试。  
+He defined a val function, which is used to evaluate the model performance on the test dataset,  
+calculate the average loss and accuracy, and print the results, finally calling the val function in the main function to test.  
   
 ![测试结果显示出两轮测试的平均损失与批次准确率](https://github.com/2062935430/ResNet34-Test/assets/128795948/c96e3d26-7b3f-4651-a538-5c44ceaba04a)
   
-如图中所示，通过test可以了解到模型在测试集上的表现。  
-该模型在第一个批次上的准确率是66.667%，在第二个批次上的准确率是100.000%。  
+As shown in the figure, you can learn about the model performance on the test set through test.  
+The model accuracy on the first batch is 66.667%, and on the second batch is 100.000%.  
