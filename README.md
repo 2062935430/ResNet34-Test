@@ -377,7 +377,8 @@ the output of the training process is as follows:
   
 During the training process, we completed the training of the model,  
 and assigned the save-station of the train script to 1,  
-then our model will start saving from the first round, and then save the model training parameters of 5 rounds in the default path,  
+then our model will start saving from the first round,  
+and then save the model training parameters of 5 rounds in the default path,  
 in this code, a dictionary folder will be created in the current directory for the ResNet model saving work.  
   
 In the testing process, we need to test these saved models,  
