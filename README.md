@@ -4,9 +4,9 @@
   
 ### 🥈创建ResNet文件，建立一个小的神经网络
   
->以下为一个基于ResNet34模型的变种，其中定义了一个ResNet32类，  
->它包含了一个卷积层，四个残差层，一个平均池化层和一个全连接层，  
->每个残差层又包含了多个残差模块，每个残差模块由两个卷积层和一个快捷连接组成。  
+以下为一个基于ResNet34模型的变种，其中定义了一个ResNet32类，  
+它包含了一个卷积层，四个残差层，一个平均池化层和一个全连接层，  
+每个残差层又包含了多个残差模块，每个残差模块由两个卷积层和一个快捷连接组成。  
   
     import torch
     import torch.nn as nn
@@ -344,11 +344,101 @@
                            % (args.model, epoch, val_acc, val_loss)
                 torch.save(worker.model, save_dir)
                 
-在以上代码import进了和train文件同一目录下的ResBet34模型，  
-所以我们直接进入命令行调用train.py文件进行模型训练时，  
-该训练会默认使用同一目录下的模型文件展开图像分类的训练过程，  
-结果如下：  
+在以上代码import了一个和train.py存放同一目录下的ResBet34模块，  
+所以直接进入命令行程序调用train.py文件进行模型训练时，  
+该训练会默认使用同一目录下的该模型展开图像分类的训练，  
+训练过程输出如下：  
   
 ![使用ResNet34模型完成train](https://github.com/2062935430/ResNet34-Test/assets/128795948/77384b99-e2a6-45fa-8cf4-4f88cdb99a13)
   
-### 🥈测试过程（test）：  
+---
+### 🥈测试过程（test）： 
+  
+在训练过程中我们完成了对模型的训练，  
+并将train脚本的save-station赋值为1，  
+那么我们的模型将从第一轮开始保存，然后将5轮模型训练参数保存在默认的path下，  
+在该代码中则会在本目录下建立dictionary文件夹用于ResNet模型的保存工作。  
+  
+在测试过程我们则需要对这些保存的模型进行测试，  
+参考train.py的val函数设计test脚本，评估模型在验证集上的性能，包括准确率、损失等指标。  
+  
+    import torch
+    import ResNet34
+  
+    from torchvision import transforms
+    from torchvision import datasets
+    from torch.utils.data import DataLoader
+  
+    # 指定设备
+    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+  
+    # 加载训练好的模型
+    model_path = "dictionary/ResNet34/Hi05-24-20-26/ResNet34-epochs-5-model-val-acc-98.000-loss-0.000000..pt"
+    model = torch.load(model_path)
+    model.to(device)
+    model.eval()
+
+    # 指定数据集
+    test_dir = "data/test"  # 你的测试数据集的路径
+    test_dataset = datasets.ImageFolder(
+        test_dir,
+        transform=transforms.Compose([
+            transforms.RandomResizedCrop(256),
+            transforms.ToTensor()
+        ])
+    )
+
+    # 指定数据集加载器
+    test_loader = DataLoader(
+        dataset=test_dataset,
+        batch_size=4,  # 你的测试批次大小
+        shuffle=False,
+        num_workers=4  # 你的数据加载线程数
+    )
+  
+    # 定义损失函数
+    loss_function = torch.nn.CrossEntropyLoss()
+  
+  
+    # 定义一个完整的val模型，参考train.py中的val函数
+    def val():
+        validating_loss = 0
+        num_correct = 0
+        with torch.no_grad():
+            for data, target in test_loader:
+                # 测试中...
+                data, target = data.to(device), target.to(device)
+                output = model(data)
+                validating_loss += loss_function(output, target).item()  # 累加 batch loss
+                pred = output.argmax(dim=1, keepdim=True)  # 获取最大概率神经元下标
+                num_correct += pred.eq(target.view_as(pred)).sum().item()
+  
+                # 打印验证结果
+                validating_loss /= len(test_loader)
+                print('test >> Average loss: {:.4f}, Accuracy: {}/{} ({:.03f}%)\n'.format(
+                    validating_loss,
+                    num_correct,
+                    len(test_loader.dataset),
+                    100. * num_correct / len(test_loader.dataset))
+                )
+
+  
+    # 调用val模型进行测试
+    if __name__ == '__main__':
+        val()
+  
+  
+这个test代码块加载了训练后的ResNet34模型，  
+并将其放到指定的设备上，设置为评估模式，不进行梯度更新。
+  
+指定测试数据集的路径为"data/test"，并使用ImageFolder类加载图片数据，  
+同时使用RandomResizedCrop和ToTensor这两个变换对图片进行裁剪和转换为张量。 
+指定数据集加载器为test_loader，设置批次大小为4，不打乱数据顺序，使用4个线程加载数据。  
+  
+他定义了一个val函数，用于在测试数据集上评估模型的性能，计算平均损失和准确率，并打印结果，
+最后在主函数中调用val函数进行测试。  
+  
+![测试结果显示出两轮测试的平均损失与批次准确率](https://github.com/2062935430/ResNet34-Test/assets/128795948/c96e3d26-7b3f-4651-a538-5c44ceaba04a)
+  
+如图中所示，通过test可以了解到模型在测试集上的表现。  
+该模型在第一个批次上的准确率是66.667%，在第二个批次上的准确率是100.000%。
